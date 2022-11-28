@@ -4,7 +4,6 @@ import { Task, ToDo, ToDoDocument } from './schemas/todo.schema';
 import { InjectModel } from '@nestjs/mongoose';
 import { CreateToDodto } from './dto/create-todo.dto';
 import { IToDo } from './interface/ITodo.interface';
-import { TodoStateEnum } from './common/enums';
 
 @Injectable()
 export class TodosService {
@@ -18,8 +17,8 @@ export class TodosService {
    * @returns
    */
   async createTodo(createToDodto: CreateToDodto): Promise<IToDo> {
-    const createdCat = await new this.todoModel(createToDodto);
-    return createdCat.save();
+    const createdTodo = await new this.todoModel(createToDodto);
+    return createdTodo.save();
   }
 
   /**
@@ -29,7 +28,7 @@ export class TodosService {
   async findAllToDos(): Promise<IToDo[]> {
     const toDoData = await this.todoModel.find();
     if (!toDoData || toDoData.length == 0) {
-      throw new NotFoundException('Students data not found!');
+      throw new NotFoundException('aucune donnée trouvée!');
     }
 
     return toDoData;

@@ -8,12 +8,14 @@ import {
   Param,
   Post,
   Res,
-  Logger
+  Logger,
+  UseGuards
 } from '@nestjs/common';
 import { CreateToDodto } from './dto/create-todo.dto';
 import { UpdateTaskdto } from './dto/update-task.dto';
 import { IToDo } from './interface/ITodo.interface';
 import { TodosService } from './todos.service';
+import { AuthGuard } from '@nestjs/passport';
 
 @Controller('todos')
 export class TodosController {
@@ -24,7 +26,7 @@ export class TodosController {
    * 
    * @param todosService 
    */
-  constructor(private readonly todosService: TodosService) {}
+  constructor(private readonly todosService: TodosService) { }
 
   /**
    * create todo endpoint
@@ -32,13 +34,14 @@ export class TodosController {
    * @param createTodoDto
    * @returns
    */
+  @UseGuards(AuthGuard('jwt'))
   @Post()
   async create(@Res() response, @Body() createTodoDto: CreateToDodto) {
     try {
       const newTodo = await this.todosService.createTodo(createTodoDto);
 
       this.logger.log(`create new todo`);
-      
+
       return response.status(HttpStatus.CREATED).json(newTodo);
     } catch (err) {
       this.logger.error(err);
@@ -52,16 +55,17 @@ export class TodosController {
 
   /**
    * get all todo endpoint
-   * @param response
    * @returns
    */
+   @UseGuards(AuthGuard('jwt'))
   @Get()
   async findAll(@Res() response): Promise<IToDo[]> {
     try {
       const todos = await this.todosService.findAllToDos();
 
-      this.logger.log(`get all todos`);
+      this.logger.log(`get all todos: ${todos}`);
       return response.status(HttpStatus.OK).json(todos);
+
     } catch (err) {
       this.logger.error(err);
       return response.status(err.status).json(err.response);
@@ -75,6 +79,7 @@ export class TodosController {
    * @returns 
    */
   @Get('/:id')
+  @UseGuards(AuthGuard('jwt'))
   async findOne(@Res() response, @Param('id') toDoId: string) {
     try {
       const todo = await this.todosService.findOne(toDoId);
@@ -102,7 +107,7 @@ export class TodosController {
     @Param('taskid') taskId: string,
     @Body() updateTaskdto: UpdateTaskdto,
   ) {
-    try {    
+    try {
       await this.todosService.updateOneTask(
         toDoId,
         taskId,
